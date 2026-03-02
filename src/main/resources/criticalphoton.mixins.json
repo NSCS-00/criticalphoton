@@ -1,16 +1,21 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.criticalphoton.mixin",
+  "package": "com.dlzstudio.criticalphoton.mixin",
   "compatibilityLevel": "JAVA_21",
   "refmap": "criticalphoton.refmap.json",
   "mixins": [
+    "LevelOptimizerMixin",
+    "EntityOptimizerMixin",
+    "TickOptimizerMixin",
+    "NetworkOptimizerMixin"
   ],
   "client": [
     "EntityRendererMixin",
     "EntityRenderDispatcherMixin",
     "GameRendererMixin",
-    "LevelRendererMixin"
+    "LevelRendererMixin",
+    "ParticleOptimizerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

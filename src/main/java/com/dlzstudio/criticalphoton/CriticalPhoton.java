@@ -4,6 +4,7 @@ import com.dlzstudio.criticalphoton.config.CriticalPhotonConfig;
 import com.dlzstudio.criticalphoton.renderer.AsyncRenderPipeline;
 import com.dlzstudio.criticalphoton.system.PerformanceMonitor;
 import com.dlzstudio.criticalphoton.system.VisualDependencyManager;
+import com.dlzstudio.criticalphoton.tick.AsyncTickHandler;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -25,6 +26,7 @@ public class CriticalPhoton {
     private final VisualDependencyManager dependencyManager;
     private final AsyncRenderPipeline renderPipeline;
     private final PerformanceMonitor performanceMonitor;
+    private final AsyncTickHandler asyncTickHandler;
 
     public CriticalPhoton(IEventBus modEventBus, DistExecutor executor, ModContainer container) {
         instance = this;
@@ -35,11 +37,13 @@ public class CriticalPhoton {
         dependencyManager = new VisualDependencyManager();
         renderPipeline = new AsyncRenderPipeline();
         performanceMonitor = new PerformanceMonitor();
+        asyncTickHandler = new AsyncTickHandler(50, 1024);
         
         modEventBus.addListener(this::clientSetup);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         
-        LOGGER.info("临界光子已加载 - 目标：千帧体验，视觉无损");
+        LOGGER.info("临界光子 v0.2.0 已加载 - 极致性能优化引擎启动");
+        LOGGER.info("优化模块：世界/区块 | 实体 | 方块 | 粒子 | 网络 | 内存 | Tick");
     }
 
     public static CriticalPhoton getInstance() {
@@ -57,12 +61,17 @@ public class CriticalPhoton {
     public PerformanceMonitor getPerformanceMonitor() {
         return performanceMonitor;
     }
+    
+    public AsyncTickHandler getAsyncTickHandler() {
+        return asyncTickHandler;
+    }
 
     private void clientSetup(final FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             LOGGER.info("客户端设置完成，渲染管线初始化");
             renderPipeline.initialize();
             performanceMonitor.start();
+            asyncTickHandler.start();
         });
     }
 
