@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.criticalphoton.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "criticalphoton.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+    "EntityRendererMixin",
+    "EntityRenderDispatcherMixin",
+    "GameRendererMixin",
+    "LevelRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

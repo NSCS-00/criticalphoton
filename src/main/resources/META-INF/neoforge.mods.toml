@@ -1,0 +1,35 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+
+[[mods]]
+modId="criticalphoton"
+version="0.1.0"
+displayName="临界光子"
+authors="CriticalPhoton Team"
+description='''
+临界光子 - 极致性能优化模组
+为 Minecraft 1.21.1 NeoForge 提供千帧级性能优化
+- 视觉无损的智能剔除系统
+- 零开销的异步渲染架构
+- 连续 LOD 过渡
+- 根治模组实体视觉割裂问题
+'''
+logoFile="logo.png"
+
+[[dependencies.criticalphoton]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.166,)"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.criticalphoton]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1,1.22)"
+ordering="NONE"
+side="CLIENT"
+
+[[mixins]]
+config="criticalphoton.mixins.json"
