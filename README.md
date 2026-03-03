@@ -8,7 +8,7 @@ Minecraft Java 版 1.21.1 NeoForge 极致性能优化客户端模组
 |--------|-----|
 | **Mod ID** | `criticalphoton` |
 | **Group ID** | `com.dlzstudio.criticalphoton` |
-| **版本** | `0.2.0` |
+| **版本** | `0.2.1` |
 | **Minecraft** | 1.21.1 |
 | **NeoForge** | 21.1.166+ |
 
@@ -94,7 +94,7 @@ Minecraft Java 版 1.21.1 NeoForge 极致性能优化客户端模组
 
 ### 配置文件
 
-配置文件位于 `config/criticalphoton-client.toml`
+配置文件位于 `config/DLZstudio/criticalphoton-client.toml`
 
 ## API 使用
 

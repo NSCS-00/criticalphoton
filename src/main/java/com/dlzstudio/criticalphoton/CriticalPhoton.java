@@ -30,20 +30,22 @@ public class CriticalPhoton {
 
     public CriticalPhoton(IEventBus modEventBus, DistExecutor executor, ModContainer container) {
         instance = this;
-        
-        container.registerConfig(ModConfig.Type.CLIENT, CriticalPhotonConfig.CLIENT_SPEC);
-        container.registerConfig(ModConfig.Type.COMMON, CriticalPhotonConfig.COMMON_SPEC);
-        
+
+        // 注册配置文件到自定义路径 ./config/DLZstudio/criticalphoton-client.toml
+        container.registerConfig(ModConfig.Type.CLIENT, CriticalPhotonConfig.CLIENT_SPEC, "DLZstudio/criticalphoton-client");
+        container.registerConfig(ModConfig.Type.COMMON, CriticalPhotonConfig.COMMON_SPEC, "DLZstudio/criticalphoton-common");
+
         dependencyManager = new VisualDependencyManager();
         renderPipeline = new AsyncRenderPipeline();
         performanceMonitor = new PerformanceMonitor();
         asyncTickHandler = new AsyncTickHandler(50, 1024);
-        
+
         modEventBus.addListener(this::clientSetup);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
-        
-        LOGGER.info("临界光子 v0.2.0 已加载 - 极致性能优化引擎启动");
+
+        LOGGER.info("临界光子 v0.2.1 已加载 - 极致性能优化引擎启动");
         LOGGER.info("优化模块：世界/区块 | 实体 | 方块 | 粒子 | 网络 | 内存 | Tick");
+        LOGGER.info("配置文件路径：./config/DLZstudio/criticalphoton-client.toml");
     }
 
     public static CriticalPhoton getInstance() {

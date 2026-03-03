@@ -7,21 +7,23 @@ import org.apache.commons.lang3.tuple.Pair;
  * 临界光子配置系统
  */
 public class CriticalPhotonConfig {
-    
+
     public static final ModConfigSpec CLIENT_SPEC;
     public static final ClientConfig CLIENT;
-    
+
     public static final ModConfigSpec COMMON_SPEC;
     public static final CommonConfig COMMON;
-    
+
     static {
         {
-            final Pair<ClientConfig, ModConfigSpec> specPair = new ModConfigSpec.Builder().configure(ClientConfig::new);
+            final Pair<ClientConfig, ModConfigSpec> specPair = new ModConfigSpec.Builder()
+                .configure(ClientConfig::new);
             CLIENT_SPEC = specPair.getRight();
             CLIENT = specPair.getLeft();
         }
         {
-            final Pair<CommonConfig, ModConfigSpec> specPair = new ModConfigSpec.Builder().configure(CommonConfig::new);
+            final Pair<CommonConfig, ModConfigSpec> specPair = new ModConfigSpec.Builder()
+                .configure(CommonConfig::new);
             COMMON_SPEC = specPair.getRight();
             COMMON = specPair.getLeft();
         }
