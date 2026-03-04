@@ -5,7 +5,9 @@
   "compatibilityLevel": "JAVA_21",
   "refmap": "criticalphoton.refmap.json",
   "mixins": [],
-  "client": [],
+  "client": [
+    "EntityRendererMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }
