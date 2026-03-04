@@ -8,10 +8,7 @@
     "LevelOptimizerMixin",
     "EntityOptimizerMixin",
     "TickOptimizerMixin",
-    "NetworkOptimizerMixin",
-    "UltraECSMixin",
-    "ParallelRedstoneMixin",
-    "UltraTickMixin"
+    "NetworkOptimizerMixin"
   ],
   "client": [
     "EntityRendererMixin",
