@@ -73,10 +73,20 @@ public class VisualDependencyManager {
         }
     }
     
+    /**
+     * 检查实体是否应该渲染
+     * 0.3.1 修复：没有注册视觉锚点的实体始终渲染
+     */
     public boolean shouldRender(Entity entity) {
+        // 检查是否有视觉依赖注册
+        Set<BlockPos> dependentBlocks = dependencyGraph.getDependentBlocks(entity);
+        if (dependentBlocks.isEmpty()) {
+            // 没有注册视觉锚点，始终渲染 (使用原版渲染逻辑)
+            return true;
+        }
+        
+        // 有视觉依赖，检查可见性
         if (!dependencyGraph.getPotentiallyVisibleEntities().contains(entity)) {
-            Set<BlockPos> dependentBlocks = dependencyGraph.getDependentBlocks(entity);
-            if (dependentBlocks.isEmpty()) return frustumVisibility.intersects(entity);
             for (BlockPos pos : dependentBlocks) {
                 if (frustumVisibility.isInExtendedFrustum(pos, 256)) return true;
             }
@@ -84,7 +94,7 @@ public class VisualDependencyManager {
         }
         return true;
     }
-    
+
     public float getRenderAlpha(Entity entity, float partialTick) {
         EntityVisibilityState state = visibilityStates.get(entity);
         return state != null ? state.calculateAlpha(shouldRender(entity), partialTick) : 1.0f;

@@ -65,20 +65,22 @@ public class PerformanceThrottler {
     private void adjustThrottleLevel(int avgFps) {
         int newLevel = throttleLevel, newLodBias = lodBias, newUpdateInterval = entityUpdateInterval;
         float newParticleDensity = particleDensity;
-        
-        if (avgFps < minFps) {
-            newLevel = Math.min(3, throttleLevel + 1);
-            newLodBias = Math.min(2, lodBias + 1);
-            if (avgFps < minFps / 2) { newUpdateInterval = 2; newParticleDensity = 0.5f; }
-            LOGGER.info("性能不足，提升节流级别：{}", newLevel);
-        } else if (avgFps > targetFps * 1.5 && throttleLevel > 0) {
+
+        // 0.3.1 修复：更温和的节流逻辑，避免过度限制
+        if (avgFps < minFps * 0.5 && avgFps > 0) {
+            // FPS 低于最小值的一半时才提升节流级别
+            newLevel = Math.min(2, throttleLevel + 1); // 最大到级别 2
+            newLodBias = Math.min(1, lodBias + 1);
+            LOGGER.info("性能不足 (FPS:{} < {}), 提升节流级别：{}", avgFps, minFps * 0.5, newLevel);
+        } else if (avgFps >= targetFps * 0.8 && throttleLevel > 0) {
+            // FPS 达到目标的 80% 时降低节流级别
             newLevel = Math.max(0, throttleLevel - 1);
             newLodBias = Math.max(0, lodBias - 1);
             newUpdateInterval = 1;
             newParticleDensity = 1.0f;
-            LOGGER.info("性能充足，降低节流级别：{}", newLevel);
+            LOGGER.info("性能充足 (FPS:{} >= {}), 降低节流级别：{}", avgFps, targetFps * 0.8, newLevel);
         }
-        
+
         if (newLevel != throttleLevel) {
             throttleLevel = newLevel; lodBias = newLodBias;
             entityUpdateInterval = newUpdateInterval; particleDensity = newParticleDensity;
