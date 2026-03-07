@@ -51,34 +51,34 @@ public class PerformanceThrottler {
     public void update(int currentFps, PerformanceMonitor.FrameMetrics metrics) {
         fpsHistory[fpsIndex++ % fpsHistory.length] = currentFps;
         if (System.currentTimeMillis() - lastAdjustment < ADJUSTMENT_COOLDOWN) return;
-        
+
         int avgFps = getAverageFps();
         adjustThrottleLevel(avgFps);
     }
-    
+
     private int getAverageFps() {
         int sum = 0, count = 0;
         for (int fps : fpsHistory) { if (fps > 0) { sum += fps; count++; } }
         return count > 0 ? sum / count : 0;
     }
-    
+
     private void adjustThrottleLevel(int avgFps) {
         int newLevel = throttleLevel, newLodBias = lodBias, newUpdateInterval = entityUpdateInterval;
         float newParticleDensity = particleDensity;
 
-        // 0.3.1 修复：更温和的节流逻辑，避免过度限制
-        if (avgFps < minFps * 0.5 && avgFps > 0) {
-            // FPS 低于最小值的一半时才提升节流级别
-            newLevel = Math.min(2, throttleLevel + 1); // 最大到级别 2
-            newLodBias = Math.min(1, lodBias + 1);
-            LOGGER.info("性能不足 (FPS:{} < {}), 提升节流级别：{}", avgFps, minFps * 0.5, newLevel);
-        } else if (avgFps >= targetFps * 0.8 && throttleLevel > 0) {
-            // FPS 达到目标的 80% 时降低节流级别
+        // 0.3.2 修复：更激进的降级别逻辑，避免卡在高级别
+        if (avgFps >= targetFps * 0.9 && throttleLevel > 0) {
+            // FPS 达到目标的 90% 时立即降低节流级别
             newLevel = Math.max(0, throttleLevel - 1);
             newLodBias = Math.max(0, lodBias - 1);
             newUpdateInterval = 1;
             newParticleDensity = 1.0f;
-            LOGGER.info("性能充足 (FPS:{} >= {}), 降低节流级别：{}", avgFps, targetFps * 0.8, newLevel);
+            LOGGER.info("性能充足 (FPS:{} >= {}), 降低节流级别：{} -> {}", avgFps, targetFps * 0.9, throttleLevel, newLevel);
+        } else if (avgFps < minFps * 0.3 && avgFps > 0) {
+            // FPS 低于最小值的 30% 时才提升节流级别
+            newLevel = Math.min(2, throttleLevel + 1);
+            newLodBias = Math.min(1, lodBias + 1);
+            LOGGER.warn("性能严重不足 (FPS:{} < {}), 提升节流级别：{} -> {}", avgFps, minFps * 0.3, throttleLevel, newLevel);
         }
 
         if (newLevel != throttleLevel) {
