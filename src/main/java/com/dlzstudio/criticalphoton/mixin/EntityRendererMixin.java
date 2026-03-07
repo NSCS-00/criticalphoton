@@ -15,14 +15,16 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * 实体渲染器 Mixin - 0.3.2 性能修复版
+ * 实体渲染器 Mixin - 0.3.3 视锥体修复版
  * 
  * 优化策略:
- * 1. 根据节流器级别跳过远处实体
- * 2. 物品实体优先剔除
- * 3. 生物实体分级剔除
+ * 1. 禁用 Minecraft 原版视锥体剔除，使用临界光子自己的判断
+ * 2. 根据节流器级别跳过远处实体
+ * 3. 物品实体优先剔除
+ * 4. 生物实体分级剔除
  */
 @Mixin(EntityRenderer.class)
 public abstract class EntityRendererMixin {
@@ -36,13 +38,26 @@ public abstract class EntityRendererMixin {
     public void onInit(CallbackInfo ci) {
         if (!injected) {
             injected = true;
-            CriticalPhoton.LOGGER.info("EntityRendererMixin 注入成功！(0.3.2 性能修复版)");
+            CriticalPhoton.LOGGER.info("EntityRendererMixin 注入成功！(0.3.3 视锥体修复版)");
         }
     }
 
     /**
+     * 0.3.3 新增：禁用原版视锥体剔除
+     * Minecraft 会检查实体是否在视野内，但这会阻止"视线方向但不在当前视野"的实体渲染
+     * 我们返回 true 让所有实体都进入渲染流程，然后在 render() 中自己决定
+     */
+    @Inject(method = "shouldRenderAtSqrDistance(D)Z", at = @At("HEAD"), cancellable = true)
+    public void overrideShouldRenderAtSqrDistance(double distanceSq, CallbackInfoReturnable<Boolean> cir) {
+        // 返回 true 让所有实体都进入渲染流程
+        // 实际的剔除逻辑在 render() 中执行
+        cir.setReturnValue(true);
+        cir.cancel();
+    }
+
+    /**
      * 在实体渲染前检查是否应该渲染
-     * 0.3.2 修复：直接使用节流器级别决定是否跳过
+     * 0.3.3 修复：使用临界光子自己的可见性判断
      */
     @Inject(method = "render(Lnet/minecraft/world/entity/Entity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At("HEAD"), cancellable = true)
@@ -54,7 +69,7 @@ public abstract class EntityRendererMixin {
         if (entity instanceof Player) {
             return;
         }
-        
+
         // 载具实体始终渲染（避免玩家掉出世界）
         if (entity instanceof VehicleEntity) {
             return;
@@ -69,14 +84,14 @@ public abstract class EntityRendererMixin {
                 .getThrottler()
                 .getThrottleLevel();
         }
-        
+
         // 获取实体距离
         Minecraft mc = Minecraft.getInstance();
         double distSq = 0;
         if (mc.cameraEntity != null) {
             distSq = entity.distanceToSqr(mc.cameraEntity);
         }
-        
+
         // 节流级别 1: 跳过 64 格外的物品
         if (throttleLevel >= 1 && entity instanceof ItemEntity) {
             if (distSq > 64 * 64) {
@@ -84,7 +99,7 @@ public abstract class EntityRendererMixin {
                 return;
             }
         }
-        
+
         // 节流级别 1: 跳过 128 格外的普通生物
         if (throttleLevel >= 1 && entity instanceof Animal) {
             if (distSq > 128 * 128) {
@@ -92,7 +107,7 @@ public abstract class EntityRendererMixin {
                 return;
             }
         }
-        
+
         // 节流级别 2: 跳过 96 格外的怪物
         if (throttleLevel >= 2 && entity instanceof Monster) {
             if (distSq > 96 * 96) {
@@ -100,7 +115,7 @@ public abstract class EntityRendererMixin {
                 return;
             }
         }
-        
+
         // 节流级别 2: 跳过 256 格外的所有非玩家实体
         if (throttleLevel >= 2 && distSq > 256 * 256) {
             ci.cancel();
