@@ -15,16 +15,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * 实体渲染器 Mixin - 0.3.3 视锥体修复版
+ * 实体渲染器 Mixin - 0.3.4 视锥体修复版
  * 
  * 优化策略:
- * 1. 禁用 Minecraft 原版视锥体剔除，使用临界光子自己的判断
- * 2. 根据节流器级别跳过远处实体
- * 3. 物品实体优先剔除
- * 4. 生物实体分级剔除
+ * 1. 根据节流器级别跳过远处实体
+ * 2. 物品实体优先剔除
+ * 3. 生物实体分级剔除
  */
 @Mixin(EntityRenderer.class)
 public abstract class EntityRendererMixin {
@@ -38,26 +36,13 @@ public abstract class EntityRendererMixin {
     public void onInit(CallbackInfo ci) {
         if (!injected) {
             injected = true;
-            CriticalPhoton.LOGGER.info("EntityRendererMixin 注入成功！(0.3.3 视锥体修复版)");
+            CriticalPhoton.LOGGER.info("EntityRendererMixin 注入成功！(0.3.4 视锥体修复版)");
         }
     }
 
     /**
-     * 0.3.3 新增：禁用原版视锥体剔除
-     * Minecraft 会检查实体是否在视野内，但这会阻止"视线方向但不在当前视野"的实体渲染
-     * 我们返回 true 让所有实体都进入渲染流程，然后在 render() 中自己决定
-     */
-    @Inject(method = "shouldRenderAtSqrDistance(D)Z", at = @At("HEAD"), cancellable = true)
-    public void overrideShouldRenderAtSqrDistance(double distanceSq, CallbackInfoReturnable<Boolean> cir) {
-        // 返回 true 让所有实体都进入渲染流程
-        // 实际的剔除逻辑在 render() 中执行
-        cir.setReturnValue(true);
-        cir.cancel();
-    }
-
-    /**
      * 在实体渲染前检查是否应该渲染
-     * 0.3.3 修复：使用临界光子自己的可见性判断
+     * 0.3.4 修复：使用临界光子自己的可见性判断
      */
     @Inject(method = "render(Lnet/minecraft/world/entity/Entity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At("HEAD"), cancellable = true)
